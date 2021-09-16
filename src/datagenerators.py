@@ -168,7 +168,6 @@ def load_volfile(datafile, np_var):
     """
     load volume file
     formats: nii, nii.gz, mgz, npz
-    if it's a npz (compressed numpy), variable names innp_var (default: 'vol_data')
     """
     assert datafile.endswith(('.nii', '.nii.gz', '.mgz', '.npz')), 'Unknown data file'
 
