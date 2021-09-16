@@ -92,7 +92,6 @@ def test(train_dir,
             pred = net.predict([PT,CT,Clinic])
             Seg_pred = pred[0][0,...,0]
             Survival_pred = pred[1][0,0]
-            
         
         _, Seg_pred = cv2.threshold(Seg_pred,0.5,1,cv2.THRESH_BINARY)
         Dice_vals = dice(Seg_pred, Seg, labels=[1])
