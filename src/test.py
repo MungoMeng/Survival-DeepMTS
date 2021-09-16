@@ -46,7 +46,6 @@ def test(train_dir,
          ):
     
     # prepare data files
-    # inside the folder are npz files with the 'vol' and 'label'.
     train_vol_names = glob.glob(os.path.join(train_dir, '*.npz'))
     assert len(train_vol_names) > 0, "Could not find any training data"
     test_vol_names = glob.glob(os.path.join(test_dir, '*.npz'))
@@ -54,9 +53,9 @@ def test(train_dir,
 
     
     # image size
-    vol_size = [96,128,144]
+    vol_size = [128,128,112]
     # Clinical feature size
-    Clinic_size = 4
+    Clinic_size = 1
     
     
     # device handling
@@ -75,12 +74,7 @@ def test(train_dir,
     
     # load weights of model
     with tf.device(device):
-        net = networks.Multitask_framework(vol_size, Clinic_size)
-        #net = networks.Multitask_cascaded_DenseNet(vol_size, Clinic_size)
-        #net = networks.Multitask_no_DenseNet(vol_size, Clinic_size)
-        #net = networks.Singletask_Segmentation(vol_size, Clinic_size)
-        #net = networks.Singletask_Survival(vol_size, Clinic_size)
-        #net = networks.Singletask_DenseNet(vol_size, Clinic_size)
+        net = networks.DeepMTS(vol_size, Clinic_size)
         net.load_weights(load_model_file)
 
         
@@ -92,23 +86,13 @@ def test(train_dir,
         
         # load subject
         PT, CT, Seg, Label, Clinic = datagenerators.load_example_by_name(train_image)
-        
-        PT = PT[:,26:122,10:138,0:144,:]
-        CT = CT[:,26:122,10:138,0:144,:]
-        Seg = Seg[26:122,10:138,0:144]
         Survival_train_label.append(Label)
         
         with tf.device(device):
             pred = net.predict([PT,CT,Clinic])
-            
             Seg_pred = pred[0][0,...,0]
-            Survival_pred = -pred[1][0,0]
+            Survival_pred = pred[1][0,0]
             
-            #Seg_pred = pred[0,...,0]
-            #Survival_pred = 0
-            
-            #Seg_pred = np.zeros(vol_size)
-            #Survival_pred = -pred[0,0]
         
         _, Seg_pred = cv2.threshold(Seg_pred,0.5,1,cv2.THRESH_BINARY)
         Dice_vals = dice(Seg_pred, Seg, labels=[1])
@@ -124,23 +108,12 @@ def test(train_dir,
         
         # load subject
         PT, CT, Seg, Label, Clinic = datagenerators.load_example_by_name(test_image)
-        
-        PT = PT[:,26:122,10:138,0:144,:]
-        CT = CT[:,26:122,10:138,0:144,:]
-        Seg = Seg[26:122,10:138,0:144]
         Survival_test_label.append(Label)
         
         with tf.device(device):
             pred = net.predict([PT,CT,Clinic])
-            
             Seg_pred = pred[0][0,...,0]
-            Survival_pred = -pred[1][0,0]
-            
-            #Seg_pred = pred[0,...,0]
-            #Survival_pred = 0
-            
-            #Seg_pred = np.zeros(vol_size)
-            #Survival_pred = -pred[0,0]
+            Survival_pred = pred[1][0,0]
         
         _, Seg_pred = cv2.threshold(Seg_pred,0.5,1,cv2.THRESH_BINARY)
         Dice_vals = dice(Seg_pred, Seg, labels=[1])
@@ -153,11 +126,10 @@ def test(train_dir,
     
     Survival_train_label = np.array(Survival_train_label)
     Survival_test_label = np.array(Survival_test_label)
-    train_cindex = concordance_index(Survival_train_label[:,0], Survival_train_result, Survival_train_label[:,1])
-    test_cindex = concordance_index(Survival_test_label[:,0], Survival_test_result, Survival_test_label[:,1])
+    train_cindex = concordance_index(Survival_train_label[:,0], -Survival_train_result, Survival_train_label[:,1])
+    test_cindex = concordance_index(Survival_test_label[:,0], -Survival_test_result, Survival_test_label[:,1])
     print('C-index: {:.3f} ({:.3f})'.format(train_cindex, test_cindex))
 
-    
 
 if __name__ == "__main__":
     parser = ArgumentParser()

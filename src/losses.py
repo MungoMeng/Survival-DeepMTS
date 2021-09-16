@@ -4,7 +4,7 @@ import keras.backend as K
 import numpy as np
 
 
-def binary_dice(y_true, y_pred):
+def Dice_loss(y_true, y_pred):
     """
     N-D dice for binary segmentation
     """
@@ -18,7 +18,7 @@ def binary_dice(y_true, y_pred):
     return -dice
     
 
-def Cox_neg_par_log_likelihood(y_true, y_pred):  
+def Cox_loss(y_true, y_pred):
     '''
     Calculate the average Cox negative partial log-likelihood.
     y_pred is the predicted risk from trained model.

@@ -61,13 +61,12 @@ def train(train_dir,
     
  
     # image size
-    vol_size = [96,128,144]
+    vol_size = [128,128,112]
     # Clinical feature size
-    Clinic_size = 4
+    Clinic_size = 1
     
  
     # prepare data files
-    # inside the folder are npz files with the 'vol' and 'label'.
     train_vol_names = glob.glob(os.path.join(train_dir, '*.npz'))
     assert len(train_vol_names) > 0, "Could not find any training data"
     random.shuffle(train_vol_names)  # shuffle volume list
@@ -97,12 +96,7 @@ def train(train_dir,
         
     # prepare the model
     with tf.device(device):
-        model = networks.Multitask_framework(vol_size, Clinic_size)
-        #model = networks.Multitask_cascaded_DenseNet(vol_size, Clinic_size)
-        #model = networks.Multitask_no_DenseNet(vol_size, Clinic_size)
-        #model = networks.Singletask_Segmentation(vol_size, Clinic_size)
-        #model = networks.Singletask_Survival(vol_size, Clinic_size)
-        #model = networks.Singletask_DenseNet(vol_size, Clinic_size)
+        model = networks.DeepMTS(vol_size, Clinic_size)
 
         # load initial weights
         if load_model_file != './':
@@ -115,18 +109,15 @@ def train(train_dir,
             
             
     # data generator
-    train_example_gen = datagenerators.example_gen_rtload(train_vol_names, batch_size=batch_size, balance_class=True)
+    train_example_gen = datagenerators.example_gen(train_vol_names, batch_size=batch_size, balance_class=True)
     data_gen_train = datagenerators.gen_train(train_example_gen, Sort=True)
     
-    valid_example_gen = datagenerators.example_gen_rtload(valid_vol_names, batch_size=validation_size, balance_class=False)
+    valid_example_gen = datagenerators.example_gen(valid_vol_names, batch_size=validation_size, balance_class=False)
     data_gen_valid = datagenerators.gen_valid(valid_example_gen, Sort=True)
-    #valid_PT, valid_CT, valid_Clinic, valid_Seg, valid_Event = datagenerators.load_valid_examples(valid_vol_names, Sort=False)
  
     
     # callback settings
     save_file_name = os.path.join(model_dir, '{epoch:02d}-{val_Survival_Cindex:.3f}-{val_Segmentation_Dice:.3f}.h5')
-    #save_file_name = os.path.join(model_dir, '{epoch:02d}-{val_Dice:.3f}.h5')
-    #save_file_name = os.path.join(model_dir, '{epoch:02d}-{val_Cindex:.3f}.h5')
     if device == '/cpu:0': # Multiple GPUs used   
         save_callback = ParallelModelCheckpoint(model, save_file_name, save_best_only=False, save_weights_only=True, monitor='val_Survival_Cindex', mode='max')
     else:
@@ -135,7 +126,7 @@ def train(train_dir,
     save_log_name = os.path.join(model_dir, 'log.csv')
     csv_logger = CSVLogger(save_log_name, append=True)
     
-    early_stopping = EarlyStopping(monitor='val_Survival_Cindex', patience=100, mode='max') 
+    early_stopping = EarlyStopping(monitor='val_Survival_Cindex', patience=50, mode='max')
     scheduler = LearningRateScheduler(lr_scheduler)
     
     
@@ -143,15 +134,10 @@ def train(train_dir,
     if device == '/cpu:0': # Multiple GPUs used   
         Parallelmodel.compile(optimizer=Adam(lr=lr), 
                               metrics={'Segmentation':metrics.Dice,'Survival':metrics.Cindex},
-                              #metrics=[metrics.Dice],
-                              #metrics=[metrics.Cindex, metrics.Cox_loss],
-                              loss=[losses.binary_dice, losses.Cox_neg_par_log_likelihood],
-                              #loss=[losses.binary_dice],
-                              #loss=[losses.Cox_neg_par_log_likelihood],
+                              loss=[losses.Dice_loss, losses.Cox_loss],
                               loss_weights=[1.0, 1.0])
             
         Parallelmodel.fit_generator(data_gen_train,
-                                    #validation_data=([valid_PT, valid_CT, valid_Clinic],[valid_Seg]),
                                     validation_data=data_gen_valid,
                                     validation_steps=validation_steps,
                                     initial_epoch=initial_epoch,
@@ -162,15 +148,10 @@ def train(train_dir,
     else:
         model.compile(optimizer=Adam(lr=lr), 
                       metrics={'Segmentation':metrics.Dice,'Survival':metrics.Cindex},
-                      #metrics=[metrics.Dice],
-                      #metrics=[metrics.Cindex, metrics.Cox_loss],
-                      loss=[losses.binary_dice, losses.Cox_neg_par_log_likelihood],
-                      #loss=[losses.binary_dice],
-                      #loss=[losses.Cox_neg_par_log_likelihood],
+                      loss=[losses.Dice_loss, losses.Cox_loss],
                       loss_weights=[1.0,1.0])
             
         model.fit_generator(data_gen_train,
-                            #validation_data=([valid_PT, valid_CT, valid_Clinic],[valid_Seg]),
                             validation_data=data_gen_valid,
                             validation_steps=validation_steps,
                             initial_epoch=initial_epoch,
@@ -199,7 +180,7 @@ if __name__ == "__main__":
                         dest="lr", default=1e-4, 
                         help="learning rate")
     parser.add_argument("--epochs", type=int,
-                        dest="nb_epochs", default=150,
+                        dest="nb_epochs", default=200,
                         help="number of epoch")
     parser.add_argument("--steps_per_epoch", type=int,
                         dest="steps_per_epoch", default=50,

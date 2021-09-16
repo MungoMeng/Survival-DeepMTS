@@ -16,7 +16,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 
-def Multitask_framework(vol_size, Clinic_size):
+def DeepMTS(vol_size, Clinic_size):
     
     ndims = len(vol_size)
     assert ndims in [1, 2, 3], "ndims should be one of 1, 2, or 3. found: %d" % ndims
@@ -27,136 +27,22 @@ def Multitask_framework(vol_size, Clinic_size):
     Clinic = Input(shape=[Clinic_size]) 
     
     Seg_pred, x_out1, x_out2, x_out3, x_out4, x_out5 = Seg_net([PET, CT])
+    #Seg_pred, x_out1, x_out2, x_out3, x_out4, x_out5 = U_net([PET, CT])
     
     x_out6, x_out7, x_out8 = DenseNet([PET, CT, Seg_pred])
     
     x_in1 = [x_out1, x_out2, x_out3, x_out4, x_out5]
     x_in2 = [x_out6, x_out7, x_out8]
-    Survival_pred = classifier_v2(x_in1, x_in2, Clinic, L2_reg=0.1, num_node=64)
+    Survival_pred = classifier(x_in1, x_in2, Clinic, L2_reg=0.1, num_node=64)
     
     return Model(inputs=[PET, CT, Clinic], outputs=[Seg_pred, Survival_pred])
-
-
-def Multitask_cascaded_DenseNet(vol_size, Clinic_size):
-    
-    ndims = len(vol_size)
-    assert ndims in [1, 2, 3], "ndims should be one of 1, 2, or 3. found: %d" % ndims
-    
-    # inputs
-    PET = Input(shape=[*vol_size, 1])
-    CT = Input(shape=[*vol_size, 1]) 
-    Clinic = Input(shape=[Clinic_size]) 
-    
-    Seg_pred, _, _, _, _, _ = Seg_net([PET, CT])
-    
-    x_out6, x_out7, x_out8 = DenseNet([PET, CT, Seg_pred])
-    
-    #Seg_mask = Lambda(lambda x: tf.cast(x>0.5,tf.float32))(Seg_pred)
-    #x_out6, x_out7, x_out8 = DenseNet([PET, CT, Seg_mask])
-    
-    #Seg_mask = Lambda(lambda x: tf.cast(x>0.5,tf.float32))(Seg_pred)
-    #Seg_PET = multiply([PET, Seg_mask])
-    #Seg_CT = multiply([CT, Seg_mask])
-    #x_out6, x_out7, x_out8 = DenseNet([Seg_PET, Seg_CT])
-    
-    x_in = [x_out6, x_out7, x_out8]
-    Survival_pred = classifier(x_in, Clinic, L2_reg=0.1, num_node=64)
-    
-    return Model(inputs=[PET, CT, Clinic], outputs=[Seg_pred, Survival_pred])
-
-
-def Multitask_no_DenseNet(vol_size, Clinic_size):
-    
-    ndims = len(vol_size)
-    assert ndims in [1, 2, 3], "ndims should be one of 1, 2, or 3. found: %d" % ndims
-    
-    # inputs
-    PET = Input(shape=[*vol_size, 1])
-    CT = Input(shape=[*vol_size, 1]) 
-    Clinic = Input(shape=[Clinic_size]) 
-    
-    Seg_pred, x_out1, x_out2, x_out3, x_out4, x_out5 = Seg_net([PET, CT])
-    
-    x_in = [x_out1, x_out2, x_out3, x_out4, x_out5]
-    Survival_pred = classifier(x_in, Clinic, L2_reg=0.1, num_node=64)
-    
-    return Model(inputs=[PET, CT, Clinic], outputs=[Seg_pred, Survival_pred])
-
-
-def Singletask_Segmentation(vol_size, Clinic_size):
-    
-    ndims = len(vol_size)
-    assert ndims in [1, 2, 3], "ndims should be one of 1, 2, or 3. found: %d" % ndims
-    
-    # inputs
-    PET = Input(shape=[*vol_size, 1])
-    CT = Input(shape=[*vol_size, 1]) 
-    Clinic = Input(shape=[Clinic_size]) 
-    
-    Seg_pred, _, _, _, _, _ = Seg_net([PET, CT])
-    
-    return Model(inputs=[PET, CT, Clinic], outputs=[Seg_pred])
-
-
-def Singletask_Survival(vol_size, Clinic_size):
-    
-    ndims = len(vol_size)
-    assert ndims in [1, 2, 3], "ndims should be one of 1, 2, or 3. found: %d" % ndims
-    
-    # inputs
-    PET = Input(shape=[*vol_size, 1])
-    CT = Input(shape=[*vol_size, 1]) 
-    Clinic = Input(shape=[Clinic_size]) 
-    
-    _, x_out1, x_out2, x_out3, x_out4, x_out5 = Seg_net([PET, CT])
-
-    x_in = [x_out1, x_out2, x_out3, x_out4, x_out5]
-    Survival_pred = classifier(x_in, Clinic, L2_reg=0.1, num_node=64)
-    
-    return Model(inputs=[PET, CT, Clinic], outputs=[Survival_pred])
-
-
-def Singletask_DenseNet(vol_size, Clinic_size):
-    
-    ndims = len(vol_size)
-    assert ndims in [1, 2, 3], "ndims should be one of 1, 2, or 3. found: %d" % ndims
-    
-    # inputs
-    PET = Input(shape=[*vol_size, 1])
-    CT = Input(shape=[*vol_size, 1]) 
-    Clinic = Input(shape=[Clinic_size]) 
-    
-    x_out6, x_out7, x_out8 = DenseNet([PET, CT])
-    
-    x_in = [x_out6, x_out7, x_out8]
-    Survival_pred = classifier(x_in, Clinic, L2_reg=0.1, num_node=64)
-    
-    return Model(inputs=[PET, CT, Clinic], outputs=[Survival_pred])
 
 
 #--------------------------------------------------------------------------------------
 #Detailed architecture functions
 #--------------------------------------------------------------------------------------
-    
-def classifier(x_in, Clinic, L2_reg, num_node, droprate=0.5):
 
-    x_concat = []
-    for i in range(len(x_in)):
-        x = GlobalAveragePooling3D()(x_in[i])
-        x_concat.append(x)
-    x_concat = concatenate(x_concat)
-    x_concat = concatenate([x_concat, Clinic])
-    
-    x = Dropout(droprate)(x)
-    x = Dense(num_node, activation="relu", kernel_regularizer=regularizers.l2(L2_reg))(x)
-    
-    x = Dropout(droprate)(x)
-    Survival_pred = Dense(1, activation="linear", name="Survival", kernel_regularizer=regularizers.l2(L2_reg))(x)
-    
-    return Survival_pred
-
-
-def classifier_v2(x_in1, x_in2, Clinic, L2_reg, num_node, droprate=0.5):
+def classifier(x_in1, x_in2, Clinic, L2_reg, num_node, droprate=0.5):
 
     x_concat1 = []
     for i in range(len(x_in1)):
@@ -602,4 +488,3 @@ def Unet(x_in):
 
     return Seg_pred, x_out1, x_out2, x_out3, x_out4, x_out5 
 
- 
