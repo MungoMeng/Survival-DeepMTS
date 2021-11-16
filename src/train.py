@@ -187,18 +187,18 @@ if __name__ == "__main__":
                         help="iterations of each epoch")
     parser.add_argument("--validation_steps", type=int,
                         dest="validation_steps", default=10,
-                        help="iterations of each epoch")
+                        help="iterations for validation")
     parser.add_argument("--initial_epoch", type=int,
                         dest="initial_epoch", default=0,
-                        help="initial_epoch")
+                        help="initial epoch")
     parser.add_argument("--batch_size", type=int,
                         dest="batch_size", default=8,
-                        help="batch_size")
+                        help="batch size")
     parser.add_argument("--validation_size", type=int,
                         dest="validation_size", default=20,
-                        help="validation_size")
+                        help="validation size")
     parser.add_argument("--load_model_file", type=str,
-                        dest="load_model_file", default='./',
+                        dest="load model file", default='./',
                         help="optional h5 model file to initialize with")
 
     args = parser.parse_args()
