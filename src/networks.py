@@ -18,9 +18,6 @@ from tensorflow.keras import layers
 
 def DeepMTS(vol_size, Clinic_size):
     
-    ndims = len(vol_size)
-    assert ndims in [1, 2, 3], "ndims should be one of 1, 2, or 3. found: %d" % ndims
-    
     # inputs
     PET = Input(shape=[*vol_size, 1])
     CT = Input(shape=[*vol_size, 1]) 
