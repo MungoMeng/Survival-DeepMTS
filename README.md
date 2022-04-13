@@ -6,6 +6,6 @@ In this study, we propose a 3D end-to-end Deep Multi-Task Survival model (DeepMT
 ![workflow](https://github.com/MungoMeng/DeepMTS/blob/master/Figure/Workflow.png)
 
 ## Publication
-If this repository helps your work, please kindly cite our papers as follows:
+If this repository helps your work, please kindly cite our papers:
 * **Mingyuan Meng, Bingxin Gu, Lei Bi, Shaoli Song, David Dagan Feng, Jinman Kim, "DeepMTS: Deep Multi-task Learning for Survival Prediction in Patients with Advanced Nasopharyngeal Carcinoma using Pretreatment PET/CT," arXiv:2109.07711 (under review). [[arXiv](https://arxiv.org/abs/2109.07711)]**
 * **Mingyuan Meng, Yige Peng, Lei Bi, Jinman Kim, "Multi-task Deep Learning for Joint Tumor Segmentation and Outcome Prediction in Head and Neck Cancer," In: Andrearczyk, V., Oreiller, V., Hatt, M., Depeursinge, A. (eds) Head and Neck Tumor Segmentation and Outcome Prediction. HECKTOR 2021. Lecture Notes in Computer Science, vol 13209. Springer, Cham. [[Springer](https://link.springer.com/chapter/10.1007/978-3-030-98253-9_15)]**
