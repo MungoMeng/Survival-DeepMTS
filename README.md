@@ -3,7 +3,7 @@ In this study, we propose a 3D end-to-end Deep Multi-Task Survival model (DeepMT
 **For more details, please refer to our paper. [[IEEE](https://ieeexplore.ieee.org/document/9794806)] [[arXiv](https://arxiv.org/abs/2109.07711)]**
 
 ## Workflow
-![workflow](https://github.com/MungoMeng/DeepMTS/blob/master/Figure/Workflow.png)
+![workflow](https://github.com/MungoMeng/Survival-DeepMTS/blob/master/Figure/Workflow.pdf)
 
 ## Publication
 If this repository helps your work, please kindly cite our papers:
