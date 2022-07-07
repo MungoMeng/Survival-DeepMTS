@@ -2,7 +2,7 @@
 In this study, we propose a 3D end-to-end Deep Multi-Task Survival model (DeepMTS) for joint survival prediction and tumor segmentation. Our novelty is the introduction of a hard-sharing segmentation backbone to guide the extraction of local features related to the primary tumors, which reduces the interference from non-relevant background information. In addition, we also introduce a cascaded survival network to capture the prognostic information existing out of primary tumors and further leverage the global tumor information (e.g., tumor size, shape, and locations) derived from the segmentation backbone. Our experiments demonstrate that our DeepMTS can consistently outperform traditional radiomics-based survival models and existing deep survival models.  
 **For more details, please refer to our paper. [[IEEE](https://ieeexplore.ieee.org/document/9794806)] [[arXiv](https://arxiv.org/abs/2109.07711)]**
 
-## Workflow
+## Overview
 ![workflow](https://github.com/MungoMeng/Survival-DeepMTS/blob/master/Figure/Overview.png)
 
 ## Publication
