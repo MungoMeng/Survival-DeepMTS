@@ -198,7 +198,7 @@ if __name__ == "__main__":
                         dest="validation_size", default=20,
                         help="validation size")
     parser.add_argument("--load_model_file", type=str,
-                        dest="load model file", default='./',
+                        dest="load_model_file", default='./',
                         help="optional h5 model file to initialize with")
 
     args = parser.parse_args()
