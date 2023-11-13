@@ -53,7 +53,7 @@ def test(train_dir,
 
     
     # image size
-    vol_size = [128,128,112]
+    vol_size = [128,128,128]
     # Clinical feature size
     Clinic_size = 1
     
