@@ -23,7 +23,7 @@ def Cox_loss(y_true, y_pred):
     Calculate the average Cox negative partial log-likelihood.
     y_pred is the predicted risk from trained model.
     y_true is event indicator, event=0 means censored
-    Survival time is not requied as input
+    Survival time is not required as input
     Samples should be sorted with increasing survial time 
     '''
     
