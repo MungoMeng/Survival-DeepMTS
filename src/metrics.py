@@ -26,7 +26,7 @@ def Cindex(y_true, y_pred):
     y_pred is the predicted risk from trained model.
     y_true is event indicator, event=0 means censored
     Survival time is not required as input
-    Samples should be sorted with increasing survial time 
+    Samples should be sorted with increasing survival time 
     '''
     
     risk = y_pred
